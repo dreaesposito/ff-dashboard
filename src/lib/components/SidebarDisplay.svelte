@@ -6,7 +6,7 @@
   cn();
 </script>
 
-<ScrollArea class="h-dvh rounded border p-4 hidden md:block">
+<ScrollArea class="h-dvh rounded border p-4">
   <div class="flex justify-between font-bold pb-1">
     <div>#</div>
     <div>Player</div>

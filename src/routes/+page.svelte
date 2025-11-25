@@ -9,6 +9,7 @@
   import SidebarDisplay from "$lib/components/SidebarDisplay.svelte";
   import { Switch } from "$lib/components/ui/switch/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
+  import * as Resizable from "$lib/components/ui/resizable/index.js";
 
   /** @type {import('./$types').PageProps} */
   let { data } = $props();
@@ -144,54 +145,61 @@
   </div>
 </div>
 
-<div class="grid grid-cols-10">
-  <div class="col-span-3 lg:col-span-2 rounded-md ml-4">
-    {#await data}
-      <p>Loading player data...</p>
-    {:then data}
-      <SidebarDisplay {currentView} />
-    {:catch error}
-      <p>Error loading data...</p>
-    {/await}
-  </div>
-
-  <div class="col-span-10 md:col-span-8 mr-4 h-dvh">
-    {#if sleeperData.rosters.length <= 0 && !loadingLeague}
-      <Empty.Root class="h-[70%]">
-        <Empty.Header>
-          <Empty.Media variant="icon">
-            <Trophy />
-          </Empty.Media>
-          <Empty.Title>No league to display...</Empty.Title>
-          <Empty.Description class="text-md w-xl">
-            Enter your <a
-              class="underline cursor-pointer"
-              href="https://support.sleeper.com/en/articles/4121798-how-do-i-find-my-league-id"
-              >Sleeper League ID</a
-            > above to get started.</Empty.Description
-          >
-        </Empty.Header>
-        <Empty.Content></Empty.Content>
-      </Empty.Root>
-    {:else if loadingLeague}
-      <div
-        class="text-2xl place-items-center text-center content-center text-primary/85 col-span-2 p-2 h-[70%]"
-      >
-      Loading...
-      </div>
-    {:else}
-      {#each sleeperData.rosters as team, i}
-        <div class="pb-4 px-2">
-          <TeamCard
-            teamName={getTeamName(team.owner_id)}
-            players={team.players}
-            totalValue={team.totalValue}
-            trendValue={team.trend30Day}
-            rank={i + 1}
-            {onTeamClick}
-          />
+<Resizable.PaneGroup
+  direction="horizontal"
+  class="min-h-[200px] max-w-screen rounded-lg border"
+>
+  <Resizable.Pane defaultSize={20}>
+    <div class="col-span-3 lg:col-span-2 rounded-md ml-4">
+      {#await data}
+        <p>Loading player data...</p>
+      {:then data}
+        <SidebarDisplay {currentView} />
+      {:catch error}
+        <p>Error loading data...</p>
+      {/await}
+    </div>
+  </Resizable.Pane>
+  <Resizable.Handle withHandle />
+  <Resizable.Pane defaultSize={80}>
+    <div class="col-span-10 md:col-span-8 mr-4 h-dvh">
+      {#if sleeperData.rosters.length <= 0 && !loadingLeague}
+        <Empty.Root class="h-[70%]">
+          <Empty.Header>
+            <Empty.Media variant="icon">
+              <Trophy />
+            </Empty.Media>
+            <Empty.Title>No league to display...</Empty.Title>
+            <Empty.Description class="text-md w-xl">
+              Enter your <a
+                class="underline cursor-pointer"
+                href="https://support.sleeper.com/en/articles/4121798-how-do-i-find-my-league-id"
+                >Sleeper League ID</a
+              > above to get started.</Empty.Description
+            >
+          </Empty.Header>
+          <Empty.Content></Empty.Content>
+        </Empty.Root>
+      {:else if loadingLeague}
+        <div
+          class="text-2xl place-items-center text-center content-center text-primary/85 col-span-2 p-2 h-[70%]"
+        >
+          Loading...
         </div>
-      {/each}
-    {/if}
-  </div>
-</div>
+      {:else}
+        {#each sleeperData.rosters as team, i}
+          <div class="pb-4 px-2">
+            <TeamCard
+              teamName={getTeamName(team.owner_id)}
+              players={team.players}
+              totalValue={team.totalValue}
+              trendValue={team.trend30Day}
+              rank={i + 1}
+              {onTeamClick}
+            />
+          </div>
+        {/each}
+      {/if}
+    </div>
+  </Resizable.Pane>
+</Resizable.PaneGroup>

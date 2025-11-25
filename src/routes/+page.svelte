@@ -5,7 +5,6 @@
   import { Loader2Icon, Trophy } from "@lucide/svelte";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
-  import { Checkbox } from "$lib/components/ui/checkbox/index.js";
   import * as Empty from "$lib/components/ui/empty/index.js";
   import SidebarDisplay from "$lib/components/SidebarDisplay.svelte";
   import { Switch } from "$lib/components/ui/switch/index.js";

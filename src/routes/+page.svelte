@@ -2,10 +2,14 @@
   import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
   import ThemeToggle from "$lib/components/ThemeToggle.svelte";
   import TeamCard from "$lib/components/TeamCard.svelte";
-  import { Loader2Icon } from "@lucide/svelte";
+  import { Loader2Icon, Trophy } from "@lucide/svelte";
   import { Input } from "$lib/components/ui/input";
   import { Button } from "$lib/components/ui/button";
   import { Checkbox } from "$lib/components/ui/checkbox/index.js";
+  import * as Empty from "$lib/components/ui/empty/index.js";
+  import SidebarDisplay from "$lib/components/SidebarDisplay.svelte";
+  import { Switch } from "$lib/components/ui/switch/index.js";
+  import { Label } from "$lib/components/ui/label/index.js";
 
   /** @type {import('./$types').PageProps} */
   let { data } = $props();
@@ -19,8 +23,15 @@
   let currentView = $derived.by(() => {
     // filter shows players that do not exist in a team roster
     return filtered
-    ? fantasyCalcData.filter(p => !sleeperData.rosters.some(r => r.players.find(pObj => pObj.player.sleeperId === p.player.sleeperId)))
-    : fantasyCalcData;
+      ? fantasyCalcData.filter(
+          (p) =>
+            !sleeperData.rosters.some((r) =>
+              r.players.find(
+                (pObj) => pObj.player.sleeperId === p.player.sleeperId
+              )
+            )
+        )
+      : fantasyCalcData;
   });
   const validInput = $derived(leagueID.match(/^\d{18,19}$/)); // 18 or 19 digit regex
 
@@ -98,14 +109,19 @@
   }
 </script>
 
-<div class="grid grid-cols-4 p-2">
-  <ThemeToggle />
-  <div class="flex items-center gap-3">
-    <Checkbox id="terms" onCheckedChange={() => (filtered = !filtered)} />
-    <label for="terms">Show available</label>
+<div class="grid grid-cols-10 py-2">
+  <div class="col-span-3 lg:col-span-2 flex justify-between">
+    <ThemeToggle class="pl-4" />
+    <div class="flex items-center gap-3">
+      <Switch
+        id="show-available"
+        onCheckedChange={() => (filtered = !filtered)}
+      />
+      <Label for="show-available">Show available only</Label>
+    </div>
   </div>
-  <div class="col-span-2">
-    <form class="flex w-full max-w-sm items-center space-x-2">
+  <div class="col-span-6 lg:col-span-8 lg:place-items-center place-items-end">
+    <form class="flex max-w-sm items-center space-x-2 pr-4">
       <ButtonGroup.Root>
         <Input
           placeholder="Sleeper League ID (18-19 digits)"
@@ -130,36 +146,39 @@
 </div>
 
 <div class="grid grid-cols-10">
-  <div class="col-span-2 bg-primary/5 rounded-md p-2 ml-4">
+  <div class="col-span-3 lg:col-span-2 rounded-md ml-4">
     {#await data}
       <p>Loading player data...</p>
     {:then data}
-      <h1 class="underline text-xl pb-2">Overall Rankings:</h1>
-      {#each currentView as playerObj}
-        <p
-          class={`text-primary/95 " ${playerObj.isSelected ? "bg-primary/20" : ""}`}
-        >
-          {playerObj.overallRank}. {playerObj.player.name}
-          {playerObj.redraftValue}
-        </p>
-      {/each}
+      <SidebarDisplay {currentView} />
     {:catch error}
       <p>Error loading data...</p>
     {/await}
   </div>
 
-  <div class="col-span-8 mr-4">
+  <div class="col-span-10 md:col-span-8 mr-4 h-dvh">
     {#if sleeperData.rosters.length <= 0 && !loadingLeague}
-      <div class="text-center text-primary/85 col-span-2 text-xl">
-        Enter your <a
-          class="underline cursor-pointer"
-          href="https://support.sleeper.com/en/articles/4121798-how-do-i-find-my-league-id"
-          >Sleeper League ID</a
-        > above to get started...
-      </div>
+      <Empty.Root class="h-[70%]">
+        <Empty.Header>
+          <Empty.Media variant="icon">
+            <Trophy />
+          </Empty.Media>
+          <Empty.Title>No league to display...</Empty.Title>
+          <Empty.Description class="text-md w-xl">
+            Enter your <a
+              class="underline cursor-pointer"
+              href="https://support.sleeper.com/en/articles/4121798-how-do-i-find-my-league-id"
+              >Sleeper League ID</a
+            > above to get started.</Empty.Description
+          >
+        </Empty.Header>
+        <Empty.Content></Empty.Content>
+      </Empty.Root>
     {:else if loadingLeague}
-      <div class="text-2xl text-center text-primary/85 col-span-2 p-2">
-        Loading...
+      <div
+        class="text-2xl place-items-center text-center content-center text-primary/85 col-span-2 p-2 h-[70%]"
+      >
+      Loading...
       </div>
     {:else}
       {#each sleeperData.rosters as team, i}

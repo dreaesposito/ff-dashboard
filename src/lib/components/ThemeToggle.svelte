@@ -6,10 +6,10 @@
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
   import { buttonVariants } from "$lib/components/ui/button/index.js";
 
-  let {styles} = $props();
+  let { class: className = "" } = $props();
 </script>
 
-<div class={styles}>
+<div class={className}>
   <DropdownMenu.Root>
     <DropdownMenu.Trigger
       class={buttonVariants({ variant: "outline", size: "icon" })}

@@ -147,10 +147,10 @@
 
 <Resizable.PaneGroup
   direction="horizontal"
-  class="min-h-[200px] max-w-screen rounded-lg border"
+  class="max-w-screen rounded-lg border"
 >
   <Resizable.Pane defaultSize={20}>
-    <div class="col-span-3 lg:col-span-2 rounded-md ml-4">
+    <div class="col-span-3 lg:col-span-2">
       {#await data}
         <p>Loading player data...</p>
       {:then data}
@@ -162,7 +162,7 @@
   </Resizable.Pane>
   <Resizable.Handle withHandle />
   <Resizable.Pane defaultSize={80}>
-    <div class="col-span-10 md:col-span-8 mr-4 h-dvh">
+    <div class="col-span-10 md:col-span-8 h-dvh">
       {#if sleeperData.rosters.length <= 0 && !loadingLeague}
         <Empty.Root class="h-[70%]">
           <Empty.Header>

@@ -10,9 +10,12 @@
   import { Switch } from "$lib/components/ui/switch/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
   import * as Resizable from "$lib/components/ui/resizable/index.js";
+  import { Skeleton } from "$lib/components/ui/skeleton/index.js";
 
   /** @type {import('./$types').PageProps} */
   let { data } = $props();
+
+  const numSkeletons = 10;
 
   let inTimeout = $state(false); // to set a timer before another api request can be made
   let leagueID = $state(import.meta.env.VITE_TEST_ID ?? "");
@@ -163,7 +166,7 @@
   <Resizable.Handle withHandle />
   <Resizable.Pane defaultSize={80}>
     <div class="col-span-10 md:col-span-8 h-dvh">
-      {#if sleeperData.rosters.length <= 0 && !loadingLeague}
+      {#if false && sleeperData.rosters.length <= 0 && !loadingLeague}
         <Empty.Root class="h-[70%]">
           <Empty.Header>
             <Empty.Media variant="icon">
@@ -181,14 +184,14 @@
           <Empty.Content></Empty.Content>
         </Empty.Root>
       {:else if loadingLeague}
-        <div
-          class="text-2xl place-items-center text-center content-center text-primary/85 col-span-2 p-2 h-[70%]"
-        >
-          Loading...
-        </div>
-      {:else}
+        {#each Array(numSkeletons) as _, i}
+          <div class="pb-4 px-2 w-full">
+            <Skeleton class="w-full p-1 h-17" />
+          </div>
+        {/each}
+      {:else if true}
         {#each sleeperData.rosters as team, i}
-          <div class="pb-4 px-2">
+          <div class="pb-4 px-1">
             <TeamCard
               teamName={getTeamName(team.owner_id)}
               players={team.players}

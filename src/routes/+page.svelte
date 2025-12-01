@@ -11,6 +11,7 @@
   import { Label } from "$lib/components/ui/label/index.js";
   import * as Resizable from "$lib/components/ui/resizable/index.js";
   import { Skeleton } from "$lib/components/ui/skeleton/index.js";
+  import { testRosters, testUsers } from "$lib/testData";
 
   /** @type {import('./$types').PageProps} */
   let { data } = $props();
@@ -37,6 +38,10 @@
       : fantasyCalcData;
   });
   const validInput = $derived(leagueID.match(/^\d{18,19}$/)); // 18 or 19 digit regex
+
+  sleeperData.users = testUsers;
+  sleeperData.rosters = testRosters;
+  transformData(sleeperData);
 
   function onTeamClick(roster) {
     fantasyCalcData.forEach((playerObj) => {
@@ -85,6 +90,12 @@
       console.error(err);
     }
 
+    transformData(sleeperData);
+
+    loadingLeague = false;
+  }
+
+  function transformData(sleeperData) {
     sleeperData.rosters.forEach((roster) => {
       // map each playerID in the roster to the actual player JSON object
       roster.players = roster.players.flatMap((playerId) => {
@@ -107,8 +118,6 @@
 
     // sort rosters in descending order
     sleeperData.rosters.sort((a, b) => b.totalValue - a.totalValue);
-
-    loadingLeague = false;
   }
 </script>
 

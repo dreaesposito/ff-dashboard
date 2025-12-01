@@ -1,48 +1,24 @@
 <script>
-  import PlayerColumnDisplay from "./PlayerColumnDisplay.svelte";
+  import { red } from "@mui/material/colors";
+  import PositionTable from "./PositionTable.svelte";
 
   let { players } = $props();
-  console.log(players);
+  const positions = [
+    { type: "QB", colour: "bg-green-50 dark:bg-green-950 border-primary/10" },
+    { type: "RB", colour: "bg-blue-50 dark:bg-blue-950 border-primary/10" },
+    { type: "WR", colour: "bg-red-50 dark:bg-red-950 border-primary/10" },
+    { type: "TE", colour: "bg-purple-50 dark:bg-purple-950 border-primary/10" },
+  ];
 </script>
 
-<div class="grid grid-cols-4 rounded-md">
-  <!-- Quarterbacks column -->
-  <div>
-    <div class="font-bold underline">QB</div>
+<div class="lg:grid lg:grid-cols-4 rounded-md">
+  {#each positions as position}
     <div>
-      {#each players.filter((p) => p.player.position === "QB") as playerObj}
-        <PlayerColumnDisplay {playerObj} />
-      {/each}
+      <PositionTable
+        players={players.filter((p) => p.player.position === position.type)}
+        position={position.type}
+        colour={position.colour}
+      />
     </div>
-  </div>
-
-  <!-- Running backs column -->
-  <div>
-    <div class="font-bold underline">RB</div>
-    <div>
-      {#each players.filter((p) => p.player.position === "RB") as playerObj}
-        <PlayerColumnDisplay {playerObj} />
-      {/each}
-    </div>
-  </div>
-
-  <!-- Wide receivers column -->
-  <div>
-    <div class="font-bold underline">WR</div>
-    <div>
-      {#each players.filter((p) => p.player.position === "WR") as playerObj}
-        <PlayerColumnDisplay {playerObj} />
-      {/each}
-    </div>
-  </div>
-
-  <!-- Tight ends column -->
-  <div>
-    <div class="font-bold underline">TE</div>
-    <div>
-      {#each players.filter((p) => p.player.position === "TE") as playerObj}
-        <PlayerColumnDisplay {playerObj} />
-      {/each}
-    </div>
-  </div>
+  {/each}
 </div>

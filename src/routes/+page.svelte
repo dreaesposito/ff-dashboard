@@ -12,6 +12,8 @@
   import * as Resizable from "$lib/components/ui/resizable/index.js";
   import { Skeleton } from "$lib/components/ui/skeleton/index.js";
   import { testRosters, testUsers } from "$lib/testData";
+  import { maxDate } from "@internationalized/date";
+  import { ratioPercentage } from "$lib/utils.js";
 
   /** @type {import('./$types').PageProps} */
   let { data } = $props();
@@ -23,25 +25,18 @@
   let loadingLeague = $state(false);
   let sleeperData = $state({ rosters: [], users: [] });
   let fantasyCalcData = $state(data.fantasyCalcData);
-  let filtered = $state(false);
-  let currentView = $derived.by(() => {
-    // filter shows players that do not exist in a team roster
-    return filtered
-      ? fantasyCalcData.filter(
-          (p) =>
-            !sleeperData.rosters.some((r) =>
-              r.players.find(
-                (pObj) => pObj.player.sleeperId === p.player.sleeperId
-              )
-            )
-        )
-      : fantasyCalcData;
-  });
   const validInput = $derived(leagueID.match(/^\d{18,19}$/)); // 18 or 19 digit regex
 
   sleeperData.users = testUsers;
   sleeperData.rosters = testRosters;
   transformData(sleeperData);
+
+  let maxTeamValue = $derived(
+    Math.max(...sleeperData.rosters.map((r) => r.totalValue))
+  );
+  let minTeamValue = $derived(
+    Math.min(...sleeperData.rosters.map((r) => r.totalValue))
+  );
 
   function onTeamClick(roster) {
     fantasyCalcData.forEach((playerObj) => {
@@ -124,13 +119,6 @@
 <div class="grid grid-cols-10 py-2">
   <div class="col-span-3 lg:col-span-2 flex justify-between">
     <ThemeToggle class="pl-4" />
-    <div class="flex items-center gap-3">
-      <Switch
-        id="show-available"
-        onCheckedChange={() => (filtered = !filtered)}
-      />
-      <Label for="show-available">Show available only</Label>
-    </div>
   </div>
   <div class="col-span-6 lg:col-span-8 lg:place-items-center place-items-end">
     <form class="flex max-w-sm items-center space-x-2 pr-4">
@@ -166,7 +154,7 @@
       {#await data}
         <p>Loading player data...</p>
       {:then data}
-        <SidebarDisplay {currentView} />
+        <SidebarDisplay {fantasyCalcData} {sleeperData} />
       {:catch error}
         <p>Error loading data...</p>
       {/await}
@@ -174,8 +162,8 @@
   </Resizable.Pane>
   <Resizable.Handle withHandle />
   <Resizable.Pane defaultSize={80}>
-    <div class="col-span-10 md:col-span-8 h-dvh">
-      {#if false && sleeperData.rosters.length <= 0 && !loadingLeague}
+    <div class="col-span-10 md:col-span-8 min-h-dvh">
+      {#if sleeperData.rosters.length <= 0 && !loadingLeague}
         <Empty.Root class="h-[70%]">
           <Empty.Header>
             <Empty.Media variant="icon">
@@ -207,6 +195,7 @@
               totalValue={team.totalValue}
               trendValue={team.trend30Day}
               rank={i + 1}
+              widthValue={ratioPercentage(team.totalValue, maxTeamValue)}
               {onTeamClick}
             />
           </div>

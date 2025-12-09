@@ -4,10 +4,10 @@
 
   let { players } = $props();
   const positions = [
-    { type: "QB", colour: "bg-green-50 dark:bg-green-950 border-primary/10" },
-    { type: "RB", colour: "bg-blue-50 dark:bg-blue-950 border-primary/10" },
-    { type: "WR", colour: "bg-red-50 dark:bg-red-950 border-primary/10" },
-    { type: "TE", colour: "bg-purple-50 dark:bg-purple-950 border-primary/10" },
+    { type: "QB", colour: "bg-quarterback/40" },
+    { type: "RB", colour: "bg-running-back/40" },
+    { type: "WR", colour: "bg-wide-receiver/40" },
+    { type: "TE", colour: "bg-tight-end/40" },
   ];
 </script>
 
@@ -17,7 +17,7 @@
       <PositionTable
         players={players.filter((p) => p.player.position === position.type)}
         position={position.type}
-        colour={position.colour}
+        colour={position.colour + " border-primary/10"}
       />
     </div>
   {/each}

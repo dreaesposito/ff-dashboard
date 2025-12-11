@@ -25,7 +25,7 @@
 </script>
 
 <ScrollArea class="h-dvh border rounded p-2">
-  <div class="flex justify-between pb-2 items-center">
+  <div class="flex justify-between pb-2  px items-center">
     <div>Rankings</div>
     <div class="flex gap-3">
       <Switch
@@ -44,7 +44,7 @@
   {#each currentView as playerObj, i}
     <div
       class={cn(
-        "p-1 m-0 rounded-sm hover:bg-primary/10",
+        "p-1 m-0 rounded-sm hover:bg-primary/10 transition duration-200 ease-in-out",
         i % 2 == 0 ? "bg-primary/2" : "",
         playerObj.isSelected
           ? "bg-accent-foreground/25 hover:bg-accent-foreground/25"

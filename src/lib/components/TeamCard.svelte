@@ -15,12 +15,16 @@
     onTeamClick,
     totalValue,
     trendValue,
+    selected,
     rank,
     widthValue,
   } = $props();
 
   let maxValue = $derived(totalValue);
   let minValue = $state(0);
+  let isOpen = $state(false);
+
+  let accordionRef = $state(null);
 
   let roster = $state([]);
 
@@ -75,12 +79,27 @@
 </script>
 
 <Accordion.Root
+  value={rank}
+  aria-selected={selected}
   type="single"
-  onclick={() => onTeamClick(players)}
-  class={`w-full border p-2 rounded-md hover:bg-foreground/5 hover:shadow-lg hover:cursor-pointer transition-all duration-200 ${className}`}
+  onclick={() => {
+    if (accordionRef?.getAttribute("data-state") === "closed")
+      onTeamClick(players);
+  }}
+  class={`w-full border p-2 rounded-md hover:bg-foreground/3 aria-selected:bg-foreground/5 
+  aria-selected:border-foreground/20 hover:shadow-lg hover:cursor-pointer transition-all duration-200 ${className}`}
 >
   <Accordion.Item>
-    <Accordion.Trigger class="overflow-hidden">
+    <Accordion.Trigger
+      class="overflow-hidden"
+      bind:ref={accordionRef}
+      onclick={() => {
+        if (accordionRef?.getAttribute("data-state") === "open" && selected) {
+          selected = "false";
+          onTeamClick(null);
+        }
+      }}
+    >
       <div
         class="flex items-center justify-between cursor-pointer text-lg min-w-full"
       >
@@ -142,7 +161,10 @@
         </div>
       </div>
     </Accordion.Trigger>
-    <Accordion.Content class="flex flex-col gap-4 text-balance">
+    <Accordion.Content
+      class="flex flex-col gap-4 text-balance"
+      onclick={() => onTeamClick(players)}
+    >
       <TeamTableDisplay {players} />
     </Accordion.Content>
   </Accordion.Item>

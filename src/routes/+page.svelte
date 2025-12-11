@@ -39,6 +39,12 @@
   );
 
   function onTeamClick(roster) {
+    sleeperData.rosters.forEach((r) => (r.players.isSelected = "false"));
+    if (roster === null) {
+      fantasyCalcData.forEach((playerObj) => playerObj.isSelected = false);
+    } else {
+      roster.isSelected = "true";
+        // highlight the players from the team that was selected
     fantasyCalcData.forEach((playerObj) => {
       if (
         roster.find(
@@ -50,6 +56,7 @@
         playerObj.isSelected = false;
       }
     });
+    }
   }
 
   function getTeamName(ownerId) {
@@ -152,11 +159,11 @@
   <Resizable.Pane defaultSize={20}>
     <div class="col-span-3 lg:col-span-2">
       {#await data}
-        <p>Loading player data...</p>
+        <p class="pt-5 text-center font-bold">Loading player data...</p>
       {:then data}
         <SidebarDisplay {fantasyCalcData} {sleeperData} />
       {:catch error}
-        <p>Error loading data...</p>
+        <p class="pt-5 text-center font-bold">Error loading data...</p>
       {/await}
     </div>
   </Resizable.Pane>
@@ -194,6 +201,7 @@
               players={team.players}
               totalValue={team.totalValue}
               trendValue={team.trend30Day}
+              bind:selected={team.players.isSelected}
               rank={i + 1}
               widthValue={ratioPercentage(team.totalValue, maxTeamValue)}
               {onTeamClick}

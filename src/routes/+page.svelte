@@ -1,125 +1,85 @@
 <script>
+  import { onMount } from "svelte";
+  /* Utility functions */
+  import {
+    getUserLeagues,
+    getFantasyCalcData,
+    transformData,
+  } from "$lib/dataUtils.svelte.js";
+  import { ratioPercentage } from "$lib/utils.js";
+  /* shadcn Components */
+  import { Skeleton } from "$lib/components/ui/skeleton/index.js";
   import * as ButtonGroup from "$lib/components/ui/button-group/index.js";
   import ThemeToggle from "$lib/components/ThemeToggle.svelte";
-  import TeamCard from "$lib/components/TeamCard.svelte";
-  import { Loader2Icon, Trophy } from "@lucide/svelte";
-  import { Input } from "$lib/components/ui/input";
-  import { Button } from "$lib/components/ui/button";
   import * as Empty from "$lib/components/ui/empty/index.js";
-  import SidebarDisplay from "$lib/components/SidebarDisplay.svelte";
-  import { Switch } from "$lib/components/ui/switch/index.js";
-  import { Label } from "$lib/components/ui/label/index.js";
+  import { Button } from "$lib/components/ui/button";
+  import { Input } from "$lib/components/ui/input";
+  import * as Select from "$lib/components/ui/select/index.js";
   import * as Resizable from "$lib/components/ui/resizable/index.js";
-  import { Skeleton } from "$lib/components/ui/skeleton/index.js";
-  import { testRosters, testUsers } from "$lib/testData";
-  import { maxDate } from "@internationalized/date";
-  import { ratioPercentage } from "$lib/utils.js";
+  /* Custom Components */
+  import TeamCard from "$lib/components/TeamCard.svelte";
+  import SidebarDisplay from "$lib/components/SidebarDisplay.svelte";
+  /* Icons */
+  import { Import, Loader2Icon, Trophy } from "@lucide/svelte";
 
-  /** @type {import('./$types').PageProps} */
-  let { data } = $props();
+  /* constants */
+  const NUM_SKELETONS = 10;
 
-  const numSkeletons = 10;
-
-  let inTimeout = $state(false); // to set a timer before another api request can be made
-  let leagueID = $state(import.meta.env.VITE_TEST_ID ?? "");
+  /* stateful variables */
   let loadingLeague = $state(false);
-  let sleeperData = $state({ rosters: [], users: [] });
-  let fantasyCalcData = $state(data.fantasyCalcData);
-  const validInput = $derived(leagueID.match(/^\d{18,19}$/)); // 18 or 19 digit regex
+  let leagues = $state([]);
+  let fantasyCalcData = $state([]);
+  let leagueID = $state(null);
+  let username = $state(import.meta.env.VITE_TEST_USER ?? "");
+  let inTimeout = $state(false);
 
-  sleeperData.users = testUsers;
-  sleeperData.rosters = testRosters;
-  transformData(sleeperData);
-
-  let maxTeamValue = $derived(
-    Math.max(...sleeperData.rosters.map((r) => r.totalValue))
-  );
-  let minTeamValue = $derived(
-    Math.min(...sleeperData.rosters.map((r) => r.totalValue))
+  let selectedLeague = $derived(
+    leagues.find((l) => l.league_id === leagueID) ?? []
   );
 
-  function onTeamClick(roster) {
-    sleeperData.rosters.forEach((r) => (r.players.isSelected = "false"));
-    if (roster === null) {
-      fantasyCalcData.forEach((playerObj) => playerObj.isSelected = false);
-    } else {
-      roster.isSelected = "true";
-        // highlight the players from the team that was selected
-    fantasyCalcData.forEach((playerObj) => {
-      if (
-        roster.find(
-          (obj) => obj.player.sleeperId === playerObj.player.sleeperId
-        )
-      ) {
-        playerObj.isSelected = true;
-      } else {
-        playerObj.isSelected = false;
-      }
-    });
-    }
+  onMount(async () => {
+    fantasyCalcData = await getFantasyCalcData();
+  });
+
+  async function loadLeagues() {
+    if (inTimeout) return;
+    inTimeout = true;
+    setTimeout(() => (inTimeout = false), 5000); // after 5 seconds a request can be made again
+
+    loadingLeague = true;
+    // simulate a small wait, because the request usually too fast
+    await new Promise((resolve) => setTimeout(resolve, 950));
+    leagues = await getUserLeagues(username);
+    leagues.forEach((rosterSet) => transformData(rosterSet, fantasyCalcData));
+    leagueID = leagues[0].league_id;
+    loadingLeague = false;
   }
 
-  function getTeamName(ownerId) {
-    const user = sleeperData.users.find(
-      (teamObj) => teamObj.user_id === ownerId
-    );
+  function onTeamClick(roster) {
+    selectedLeague.forEach((league) => (league.players.isSelected = "false"));
+    if (roster === null) {
+      // no roster was selected
+      fantasyCalcData.forEach((p) => (p.isSelected = false));
+    } else {
+      // a roster was selected
+      roster.isSelected = "true";
+      // highlight the players from the team that was selected
+      fantasyCalcData.forEach((player) => {
+        if (roster.find((p) => p.sleeperId === player.sleeperId)) {
+          player.isSelected = true;
+        } else {
+          player.isSelected = false;
+        }
+      });
+    }
+  }
+  
+  function getTeamName(user) {
     return !user
       ? "unknown"
       : !user.metadata.team_name
         ? user.display_name
         : user.metadata.team_name;
-  }
-
-  async function loadPlayers() {
-    if (!validInput || inTimeout) {
-      return;
-    }
-
-    inTimeout = true;
-    setTimeout(() => (inTimeout = false), 5000); // after 5 seconds a request can be made again
-
-    const ROSTERS_URL = `https://api.sleeper.app/v1/league/${leagueID}/rosters`;
-    const USERS_URL = `https://api.sleeper.app/v1/league/${leagueID}/users`;
-    loadingLeague = true;
-    // simulate a small wait, because the request usually too fast
-    await new Promise((resolve) => setTimeout(resolve, 950));
-    try {
-      const rostersRes = await fetch(ROSTERS_URL);
-      const usersRes = await fetch(USERS_URL);
-      if (rostersRes.ok) sleeperData.rosters = await rostersRes.json();
-      if (usersRes.ok) sleeperData.users = await usersRes.json();
-    } catch (err) {
-      console.error(err);
-    }
-
-    transformData(sleeperData);
-
-    loadingLeague = false;
-  }
-
-  function transformData(sleeperData) {
-    sleeperData.rosters.forEach((roster) => {
-      // map each playerID in the roster to the actual player JSON object
-      roster.players = roster.players.flatMap((playerId) => {
-        const playerObj = data.fantasyCalcData.find(
-          (playerObj) => playerObj.player.sleeperId === playerId
-        );
-        return playerObj ?? [];
-      });
-
-      // compute the total value of the roster
-      roster.totalValue = roster.players.reduce((acc, currItem) => {
-        return acc + currItem.redraftValue;
-      }, 0);
-
-      // compute the total 30 day value trend of the roster
-      roster.trend30Day = roster.players.reduce((acc, currItem) => {
-        return acc + currItem.trend30Day;
-      }, 0);
-    });
-
-    // sort rosters in descending order
-    sleeperData.rosters.sort((a, b) => b.totalValue - a.totalValue);
   }
 </script>
 
@@ -127,20 +87,17 @@
   <div class="col-span-3 lg:col-span-2 flex justify-between">
     <ThemeToggle class="pl-4" />
   </div>
-  <div class="col-span-6 lg:col-span-8 lg:place-items-center place-items-end">
-    <form class="flex max-w-sm items-center space-x-2 pr-4">
+  <div class="flex gap-2 col-span-7 lg:col-span-8 lg:place-items-end">
+    <form class="flex max-w-sm pr-4">
       <ButtonGroup.Root>
-        <Input
-          placeholder="Sleeper League ID (18-19 digits)"
-          bind:value={leagueID}
-        />
+        <Input placeholder="Sleeper Username" bind:value={username} />
         <ButtonGroup.Separator />
         <Button
           variant="outline"
           type="submit"
-          class="cursor-pointer"
-          disabled={loadingLeague || !validInput}
-          onclick={loadPlayers}
+          class="cursor-pointer overflow-hidden"
+          disabled={loadingLeague || !username}
+          onclick={loadLeagues}
         >
           {#if loadingLeague}
             <Loader2Icon class="animate-spin" />
@@ -149,8 +106,50 @@
         </Button>
       </ButtonGroup.Root>
     </form>
+    {#if leagues.length > 0}
+      <div class="mr-4">
+        <Select.Root
+          type="single"
+          bind:value={leagueID}
+          onValueChange={() => onTeamClick(null)}
+        >
+          <Select.Trigger class="w-[180px]"
+            >{selectedLeague
+              ? selectedLeague.name
+              : "Select a league"}</Select.Trigger
+          >
+          <Select.Content>
+            {#each leagues as rosterSet, i}
+              <Select.Item value={rosterSet.league_id} label={rosterSet.name}
+                >{rosterSet.name}</Select.Item
+              >
+            {/each}
+          </Select.Content>
+        </Select.Root>
+      </div>
+    {/if}
   </div>
 </div>
+
+{#snippet league(selectedLeague)}
+  {#each selectedLeague as team, i}
+    <div class="pb-4 px-1">
+      <TeamCard
+        teamName={getTeamName(team.user)}
+        players={team.players}
+        totalValue={team.totalValue}
+        trendValue={team.trend30Day}
+        bind:selected={team.players.isSelected}
+        rank={i + 1}
+        widthValue={ratioPercentage(
+          team.totalValue,
+          selectedLeague.maxTeamValue
+        )}
+        {onTeamClick}
+      />
+    </div>
+  {/each}
+{/snippet}
 
 <Resizable.PaneGroup
   direction="horizontal"
@@ -158,10 +157,10 @@
 >
   <Resizable.Pane defaultSize={20}>
     <div class="col-span-3 lg:col-span-2">
-      {#await data}
+      {#await fantasyCalcData}
         <p class="pt-5 text-center font-bold">Loading player data...</p>
-      {:then data}
-        <SidebarDisplay {fantasyCalcData} {sleeperData} />
+      {:then fantasyCalcData}
+        <SidebarDisplay {fantasyCalcData} {selectedLeague} />
       {:catch error}
         <p class="pt-5 text-center font-bold">Error loading data...</p>
       {/await}
@@ -170,7 +169,7 @@
   <Resizable.Handle withHandle />
   <Resizable.Pane defaultSize={80}>
     <div class="col-span-10 md:col-span-8 min-h-dvh">
-      {#if sleeperData.rosters.length <= 0 && !loadingLeague}
+      {#if selectedLeague.length <= 0 && !loadingLeague}
         <Empty.Root class="h-[70%]">
           <Empty.Header>
             <Empty.Media variant="icon">
@@ -178,36 +177,21 @@
             </Empty.Media>
             <Empty.Title>No league to display...</Empty.Title>
             <Empty.Description class="text-md w-xl">
-              Enter your <a
-                class="underline cursor-pointer"
-                href="https://support.sleeper.com/en/articles/4121798-how-do-i-find-my-league-id"
-                >Sleeper League ID</a
-              > above to get started.</Empty.Description
+              Enter your Sleeper Username above to get started.</Empty.Description
             >
           </Empty.Header>
           <Empty.Content></Empty.Content>
         </Empty.Root>
       {:else if loadingLeague}
-        {#each Array(numSkeletons) as _, i}
+        {#each Array(NUM_SKELETONS) as _, i}
           <div class="pb-4 px-2 w-full">
             <Skeleton class="w-full p-1 h-17" />
           </div>
         {/each}
       {:else if true}
-        {#each sleeperData.rosters as team, i}
-          <div class="pb-4 px-1">
-            <TeamCard
-              teamName={getTeamName(team.owner_id)}
-              players={team.players}
-              totalValue={team.totalValue}
-              trendValue={team.trend30Day}
-              bind:selected={team.players.isSelected}
-              rank={i + 1}
-              widthValue={ratioPercentage(team.totalValue, maxTeamValue)}
-              {onTeamClick}
-            />
-          </div>
-        {/each}
+        {#if selectedLeague}
+          {@render league(selectedLeague)}
+        {/if}
       {/if}
     </div>
   </Resizable.Pane>

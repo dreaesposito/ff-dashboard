@@ -71,7 +71,7 @@
   {#each sortedPlayers as p}
     <div class="inline-flex my-1.5 rounded-sm w-full overflow-hidden">
       <div class={cn(baseClass, "rounded-s-sm min-w-0 w-8/10")}>
-        {formatName(p.player.name)}
+        {formatName(p.name)}
       </div>
       <div class={cn(baseClass, "w-18 min-w-18 text-center border-x-0")}>
         {p.redraftValue}

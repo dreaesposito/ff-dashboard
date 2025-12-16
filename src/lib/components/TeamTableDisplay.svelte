@@ -15,7 +15,7 @@
   {#each positions as position}
     <div>
       <PositionTable
-        players={players.filter((p) => p.player.position === position.type)}
+        players={players.filter((p) => p.position === position.type)}
         position={position.type}
         colour={position.colour + " border-primary/10"}
       />

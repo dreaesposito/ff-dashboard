@@ -1,6 +1,5 @@
 <script>
   import { onMount } from "svelte";
-  import { isArrayLiteralExpression } from "typescript";
   import { Button } from "$lib/components/ui/button/index.js";
   import * as Accordion from "$lib/components/ui/accordion/index.js";
   import TeamTableDisplay from "./TeamTableDisplay.svelte";
@@ -9,13 +8,12 @@
   import { Badge } from "$lib/components/ui/badge/index.js";
 
   let {
-    class: className = "",
     teamName,
     players,
     onTeamClick,
     totalValue,
     trendValue,
-    selected,
+    selected = $bindable(),
     rank,
     widthValue,
   } = $props();
@@ -29,34 +27,26 @@
   let roster = $state([]);
 
   let qbValue = $derived(
-    players.reduce((acc, currItem) => {
-      return currItem.player.position === "QB"
-        ? acc + currItem.redraftValue
-        : acc;
+    players.reduce((acc, player) => {
+      return player.position === "QB" ? acc + player.redraftValue : acc;
     }, 0)
   );
 
   let rbValue = $derived(
-    players.reduce((acc, currItem) => {
-      return currItem.player.position === "RB"
-        ? acc + currItem.redraftValue
-        : acc;
+    players.reduce((acc, player) => {
+      return player.position === "RB" ? acc + player.redraftValue : acc;
     }, 0)
   );
 
   let wrValue = $derived(
-    players.reduce((acc, currItem) => {
-      return currItem.player.position === "WR"
-        ? acc + currItem.redraftValue
-        : acc;
+    players.reduce((acc, player) => {
+      return player.position === "WR" ? acc + player.redraftValue : acc;
     }, 0)
   );
 
   let teValue = $derived(
-    players.reduce((acc, currItem) => {
-      return currItem.player.position === "TE"
-        ? acc + currItem.redraftValue
-        : acc;
+    players.reduce((acc, player) => {
+      return player.position === "TE" ? acc + player.redraftValue : acc;
     }, 0)
   );
 
@@ -79,7 +69,7 @@
 </script>
 
 <Accordion.Root
-  value={rank}
+  value={rank+teamName}
   aria-selected={selected}
   type="single"
   onclick={() => {
@@ -87,14 +77,17 @@
       onTeamClick(players);
   }}
   class={`w-full border p-2 rounded-md hover:bg-foreground/3 aria-selected:bg-foreground/5 
-  aria-selected:border-foreground/20 hover:shadow-lg hover:cursor-pointer transition-all duration-200 ${className}`}
+  aria-selected:border-foreground/20 hover:shadow-lg hover:cursor-pointer transition-all duration-200`}
 >
   <Accordion.Item>
     <Accordion.Trigger
       class="overflow-hidden"
       bind:ref={accordionRef}
       onclick={() => {
-        if (accordionRef?.getAttribute("data-state") === "open" && selected) {
+        if (
+          accordionRef?.getAttribute("data-state") === "open" &&
+          selected === "true"
+        ) {
           selected = "false";
           onTeamClick(null);
         }

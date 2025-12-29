@@ -1,24 +1,33 @@
 <script>
-  import { ScrollArea } from "$lib/components/ui/scroll-area/index.js";
+  /* Utility functions */
   import { cn, formatName } from "$lib/utils.js";
+  /* shadcn Components */
+  import { ScrollArea } from "$lib/components/ui/scroll-area/index.js";
   import { Switch } from "$lib/components/ui/switch/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
   import * as Select from "$lib/components/ui/select/index";
+
   let { fantasyCalcData, selectedLeague } = $props();
 
   let filterPosition = $state("All");
   let positionFilteredList = $derived(
     filterPosition === "All"
       ? fantasyCalcData
-      : fantasyCalcData.filter(p => p.position === filterPosition)
+      : fantasyCalcData.filter((p) => p.position === filterPosition)
   );
 
   let filterAvailable = $state(false);
-  let leaguePlayers = $derived(selectedLeague.rosters?.map(roster => roster.players).flat() ?? []);
-  let availablePlayers = $derived(positionFilteredList.filter(p => !leaguePlayers.find(o => p.sleeperId === o.sleeperId)));
-  let currentView = $derived.by(() => filterAvailable ? availablePlayers : positionFilteredList);
-
-  cn();
+  let leaguePlayers = $derived(
+    selectedLeague.rosters?.map((roster) => roster.players).flat() ?? []
+  );
+  let availablePlayers = $derived(
+    positionFilteredList.filter(
+      (p) => !leaguePlayers.find((o) => p.sleeperId === o.sleeperId)
+    )
+  );
+  let currentView = $derived.by(() =>
+    filterAvailable ? availablePlayers : positionFilteredList
+  );
 </script>
 
 <ScrollArea class="h-dvh border rounded p-2">

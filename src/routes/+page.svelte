@@ -16,7 +16,7 @@
   import TeamCard from "$lib/components/TeamCard.svelte";
   import SidebarDisplay from "$lib/components/SidebarDisplay.svelte";
   /* Icons */
-  import { Import, Loader2Icon, Trophy } from "@lucide/svelte";
+  import { Import, Loader2Icon, Trophy, TriangleAlert } from "@lucide/svelte";
 
   /* constants */
   const NUM_SKELETONS = 10;
@@ -41,7 +41,12 @@
       leagues = leaguesModule.leagues;
       leagueID = leagues[0].leagueID;
     } else {
-      fantasyCalcData = await getFantasyCalcData();
+      try {
+        fantasyCalcData = await getFantasyCalcData();
+      } catch (err) {
+        fantasyCalcData = null;
+        alert(err.message);
+      }
     }
   });
 
@@ -53,8 +58,12 @@
     loadingLeague = true;
     // simulate a small wait, because the request usually too fast
     await new Promise((resolve) => setTimeout(resolve, 950));
-    leagues = await getUserLeagues(username, fantasyCalcData);
-    leagueID = leagues[0].leagueID;
+    try {
+      leagues = await getUserLeagues(username, fantasyCalcData);
+      leagueID = leagues[0].leagueID;
+    } catch (err) {
+      alert(err.message);
+    }
     loadingLeague = false;
   }
 
@@ -101,7 +110,7 @@
           variant="outline"
           type="submit"
           class="cursor-pointer overflow-hidden"
-          disabled={loadingLeague || !username}
+          disabled={loadingLeague || !username || !fantasyCalcData}
           onclick={loadLeagues}
         >
           {#if loadingLeague}
@@ -174,7 +183,20 @@
   <Resizable.Handle withHandle />
   <Resizable.Pane defaultSize={80}>
     <div class="col-span-10 md:col-span-8 min-h-dvh">
-      {#if selectedLeague.length <= 0 && !loadingLeague}
+      {#if !fantasyCalcData}
+      <Empty.Root class="h-[70%]">
+          <Empty.Header>
+            <Empty.Media variant="icon">
+              <TriangleAlert />
+            </Empty.Media>
+            <Empty.Title>NFL data is unavailable...</Empty.Title>
+            <Empty.Description class="text-md w-xl">
+              Please try again later.</Empty.Description
+            >
+          </Empty.Header>
+          <Empty.Content></Empty.Content>
+        </Empty.Root>
+      {:else if selectedLeague.length <= 0 && !loadingLeague}
         <Empty.Root class="h-[70%]">
           <Empty.Header>
             <Empty.Media variant="icon">
@@ -193,7 +215,7 @@
             <Skeleton class="w-full p-1 h-17" />
           </div>
         {/each}
-      {:else if true}
+      {:else}
         {#if selectedLeague}
           {@render league(selectedLeague)}
         {/if}

@@ -3,10 +3,12 @@
  * @returns array of the players
  */
 export const getFantasyCalcData = async () => {
-  const resFantasyCalc = await fetch(
+  const fantasyCalcRes = await fetch(
     "https://api.fantasycalc.com/values/current?isDynasty=false&numQbs=1&numTeams=10&ppr=1"
   );
-  let originalData = resFantasyCalc.ok ? await resFantasyCalc.json() : [];
+
+  if (!fantasyCalcRes.ok) throw new Error(`Failed to load NFL player data.\nStatus: ${fantasyCalcRes.status}`);
+  const originalData = await fantasyCalcRes.json();
 
   let fantasyCalcData = [];
   originalData.forEach((playerObj) => {
@@ -45,15 +47,17 @@ export const getUserLeagues = async (username, fantasyCalcData) => {
   const SLEEPER_API = "https://api.sleeper.app/v1";
 
   try {
-    // Load the user object
-    const userData = await fetch(SLEEPER_API + `/user/${username}`).then(
-      (response) => response.json()
-    );
+    // Load the user object, throw on errors
+    const userDataRes = await fetch(SLEEPER_API + `/user/${username}`);
+    if (!userDataRes.ok) throw new Error(`Status code: ${userDataRes.status}`);
+    const userData = await userDataRes.json();
+    if (!userData) throw new Error(`This user does not exist.`);
 
-    // Get the league IDs for the user
-    const leagueIDS = await fetch(
-      SLEEPER_API + `/user/${userData.user_id}/leagues/nfl/2025`
-    ).then((response) => response.json());
+    // Get the league IDs for the user, throw on errors
+    const leagueIDSRes = await fetch(SLEEPER_API + `/user/${userData.user_id}/leagues/nfl/2025`);
+    if (!leagueIDSRes.ok) throw new Error(`Status code: ${leagueIDSRes.status}`);
+    const leagueIDS = await leagueIDSRes.json();
+    if (!leagueIDS || leagueIDS.length === 0) throw new Error(`No leagues exist for this user.`);
 
     // Get the rosters for each league that the user is in
     let leagues = [];
@@ -89,6 +93,7 @@ export const getUserLeagues = async (username, fantasyCalcData) => {
     return leagues.map((league) => transformLeague(league, fantasyCalcData));
   } catch (error) {
     console.error(error.message);
+    throw new Error(`League request for '${username}' failed.\n${error.message}`);
   }
 };
 

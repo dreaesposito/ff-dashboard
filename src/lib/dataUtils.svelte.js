@@ -1,4 +1,4 @@
-/** 
+/**
  * Make an api call for player value rankings
  * @returns array of the players
  */
@@ -41,7 +41,7 @@ export const getFantasyCalcData = async () => {
  * @param {string} username username for the Sleeper platform
  * @returns Array of leagues that the user is in
  */
-export const getUserLeagues = async (username) => {
+export const getUserLeagues = async (username, fantasyCalcData) => {
   const SLEEPER_API = "https://api.sleeper.app/v1";
 
   try {
@@ -81,29 +81,29 @@ export const getUserLeagues = async (username) => {
 
       // Only add leagues that are in operation
       if (status !== "pre_draft") {
-        rosterSet.league_id = league_id;
-        rosterSet.name = name;
-        leagues.push(rosterSet);
+        leagues.push({ rosterSet, league_id, name });
       }
     }
 
-    return leagues;
+    // Transform each league into the required structure before returning
+    return leagues.map((league) => transformLeague(league, fantasyCalcData));
   } catch (error) {
     console.error(error.message);
   }
 };
 
 /**
- * Takes a set or rosters, and does required transformations to them.
+ * Takes the given league and does required transformations to it.
  *
- * @param {Array} rosterSet: a set of "rosters" from a "league"
- * @param {Array} fantasyCalcData: data about each players value
+ * @param {Object} league: { rosterSet: Array, league_id: string, name: string }
+ * @param {Array} fantasyCalcData: relevant data about each player in the NFL
+ *
+ * @returns An object that encapsulates the required information for a "league"
  */
-export const transformData = (rosterSet, fantasyCalcData) => {
-  rosterSet.maxTeamValue = 0;
-  rosterSet.minTeamValue = 0;
+const transformLeague = (league, fantasyCalcData) => {
+  let maxTeamValue = 0;
 
-  rosterSet.forEach((roster) => {
+  league.rosterSet.forEach((roster) => {
     // 1. Assign the fantasy calculator data to each player on the roster
     roster.players = roster.players.flatMap((playerId) => {
       const playerObj = fantasyCalcData.find((p) => p.sleeperId === playerId);
@@ -119,18 +119,16 @@ export const transformData = (rosterSet, fantasyCalcData) => {
       roster.trend30Day += p.trend30Day;
     });
 
-    rosterSet.maxTeamValue = Math.max(
-      rosterSet.maxTeamValue,
-      roster.totalValue
-    );
-
-    rosterSet.minTeamValue = Math.min(
-      rosterSet.minTeamValue,
-      roster.totalValue
-    );
+    maxTeamValue = Math.max(maxTeamValue, roster.totalValue);
   });
 
   // 3. Sort rosters in descending order of total value
-  rosterSet.sort((a, b) => b.totalValue - a.totalValue);
-  return rosterSet;
+  league.rosterSet.sort((a, b) => b.totalValue - a.totalValue);
+
+  return {
+    rosters: league.rosterSet,
+    maxTeamValue,
+    leagueID: league.league_id,
+    name: league.name,
+  };
 };

@@ -6,7 +6,7 @@
   let { fantasyCalcData, selectedLeague } = $props();
 
   let filtered = $state(false);
-  let leaguePlayers = $derived(selectedLeague.map(league => league.players).flat());
+  let leaguePlayers = $derived(selectedLeague.rosters?.map(roster => roster.players).flat() ?? []);
   let availablePlayers = $derived(fantasyCalcData.filter(p => !leaguePlayers.find(o => p.sleeperId === o.sleeperId)));
   let currentView = $derived.by(() => filtered ? availablePlayers : fantasyCalcData);
 

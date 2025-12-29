@@ -1,11 +1,7 @@
 <script>
   import { onMount } from "svelte";
   /* Utility functions */
-  import {
-    getUserLeagues,
-    getFantasyCalcData,
-    transformData,
-  } from "$lib/dataUtils.svelte.js";
+  import { getUserLeagues, getFantasyCalcData } from "$lib/dataUtils.svelte.js";
   import { ratioPercentage } from "$lib/utils.js";
   /* shadcn Components */
   import { Skeleton } from "$lib/components/ui/skeleton/index.js";
@@ -34,7 +30,7 @@
   let inTimeout = $state(false);
 
   let selectedLeague = $derived(
-    leagues.find((l) => l.league_id === leagueID) ?? []
+    leagues.find((l) => l.leagueID === leagueID) ?? []
   );
 
   onMount(async () => {
@@ -49,14 +45,15 @@
     loadingLeague = true;
     // simulate a small wait, because the request usually too fast
     await new Promise((resolve) => setTimeout(resolve, 950));
-    leagues = await getUserLeagues(username);
-    leagues.forEach((rosterSet) => transformData(rosterSet, fantasyCalcData));
-    leagueID = leagues[0].league_id;
+    leagues = await getUserLeagues(username, fantasyCalcData);
+    leagueID = leagues[0].leagueID;
     loadingLeague = false;
   }
 
   function onTeamClick(roster) {
-    selectedLeague.forEach((league) => (league.players.isSelected = "false"));
+    selectedLeague.rosters.forEach(
+      (league) => (league.players.isSelected = "false")
+    );
     if (roster === null) {
       // no roster was selected
       fantasyCalcData.forEach((p) => (p.isSelected = false));
@@ -119,9 +116,9 @@
               : "Select a league"}</Select.Trigger
           >
           <Select.Content>
-            {#each leagues as rosterSet, i}
-              <Select.Item value={rosterSet.league_id} label={rosterSet.name}
-                >{rosterSet.name}</Select.Item
+            {#each leagues as league, i}
+              <Select.Item value={league.leagueID} label={league.name}
+                >{league.name}</Select.Item
               >
             {/each}
           </Select.Content>
@@ -132,7 +129,7 @@
 </div>
 
 {#snippet league(selectedLeague)}
-  {#each selectedLeague as team, i}
+  {#each selectedLeague.rosters as team, i}
     <div class="pb-4 px-1">
       <TeamCard
         teamName={getTeamName(team.user)}

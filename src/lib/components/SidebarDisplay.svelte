@@ -3,23 +3,42 @@
   import { cn, formatName } from "$lib/utils.js";
   import { Switch } from "$lib/components/ui/switch/index.js";
   import { Label } from "$lib/components/ui/label/index.js";
+  import * as Select from "$lib/components/ui/select/index";
   let { fantasyCalcData, selectedLeague } = $props();
 
-  let filtered = $state(false);
+  let filterPosition = $state("All");
+  let positionFilteredList = $derived(
+    filterPosition === "All"
+      ? fantasyCalcData
+      : fantasyCalcData.filter(p => p.position === filterPosition)
+  );
+
+  let filterAvailable = $state(false);
   let leaguePlayers = $derived(selectedLeague.rosters?.map(roster => roster.players).flat() ?? []);
-  let availablePlayers = $derived(fantasyCalcData.filter(p => !leaguePlayers.find(o => p.sleeperId === o.sleeperId)));
-  let currentView = $derived.by(() => filtered ? availablePlayers : fantasyCalcData);
+  let availablePlayers = $derived(positionFilteredList.filter(p => !leaguePlayers.find(o => p.sleeperId === o.sleeperId)));
+  let currentView = $derived.by(() => filterAvailable ? availablePlayers : positionFilteredList);
 
   cn();
 </script>
 
 <ScrollArea class="h-dvh border rounded p-2">
   <div class="flex justify-between pb-2 px items-center">
-    <div>Rankings</div>
+    <div>
+      <Select.Root type="single" bind:value={filterPosition}>
+        <Select.Trigger>{filterPosition}</Select.Trigger>
+        <Select.Content>
+          {#each ["All", "QB", "RB", "WR", "TE"] as position}
+            <Select.Item value={position} label={position}
+              >{position}</Select.Item
+            >
+          {/each}
+        </Select.Content>
+      </Select.Root>
+    </div>
     <div class="flex gap-3">
       <Switch
         id="show-available"
-        onCheckedChange={() => (filtered = !filtered)}
+        onCheckedChange={() => (filterAvailable = !filterAvailable)}
       />
       <Label for="show-available">Available</Label>
     </div>

@@ -34,7 +34,15 @@
   );
 
   onMount(async () => {
-    fantasyCalcData = await getFantasyCalcData();
+    if (import.meta.env.VITE_TEST_MODE === "true") {
+      const fcModule = await import("$lib/testData-fantasyCalcData");
+      const leaguesModule = await import("$lib/testData-leagues");
+      fantasyCalcData = fcModule.fantasyCalcData;
+      leagues = leaguesModule.leagues;
+      leagueID = leagues[0].leagueID;
+    } else {
+      fantasyCalcData = await getFantasyCalcData();
+    }
   });
 
   async function loadLeagues() {
@@ -70,7 +78,7 @@
       });
     }
   }
-  
+
   function getTeamName(user) {
     return !user
       ? "unknown"

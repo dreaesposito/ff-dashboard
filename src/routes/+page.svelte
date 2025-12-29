@@ -20,6 +20,7 @@
 
   /* constants */
   const NUM_SKELETONS = 10;
+  const MIN_REQUEST_WAIT_MS = 5000; // 5 seconds
 
   /* stateful variables */
   let loadingLeague = $state(false);
@@ -28,6 +29,7 @@
   let leagueID = $state(null);
   let username = $state(import.meta.env.VITE_TEST_USER ?? "");
   let inTimeout = $state(false);
+  let timeoutSecondsLeft = $state(MIN_REQUEST_WAIT_MS/1000);
 
   let selectedLeague = $derived(
     leagues.find((l) => l.leagueID === leagueID) ?? []
@@ -53,7 +55,11 @@
   async function loadLeagues() {
     if (inTimeout) return;
     inTimeout = true;
-    setTimeout(() => (inTimeout = false), 5000); // after 5 seconds a request can be made again
+    timeoutSecondsLeft = MIN_REQUEST_WAIT_MS/1000;
+    setTimeout(() => {
+      inTimeout = false;
+    }, MIN_REQUEST_WAIT_MS); // after x milliseconds a request can be made again
+    const timer = setInterval(() => timeoutSecondsLeft > 0 ? timeoutSecondsLeft-- : clearInterval(timer), 1000);
 
     loadingLeague = true;
     // simulate a small wait, because the request usually too fast
@@ -110,13 +116,16 @@
           variant="outline"
           type="submit"
           class="cursor-pointer overflow-hidden"
-          disabled={loadingLeague || !username || !fantasyCalcData}
+          disabled={loadingLeague || !username || !fantasyCalcData || inTimeout}
           onclick={loadLeagues}
         >
           {#if loadingLeague}
             <Loader2Icon class="animate-spin" />
+          {:else if inTimeout}
+            Please wait: {timeoutSecondsLeft}
+          {:else}
+            Submit
           {/if}
-          Submit
         </Button>
       </ButtonGroup.Root>
     </form>

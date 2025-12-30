@@ -1,5 +1,6 @@
 <script>
   import { onMount } from "svelte";
+  import { sampleLeagues } from "$lib/demoData-leagues";
   /* Utility functions */
   import { getUserLeagues, getFantasyCalcData } from "$lib/dataUtils.svelte.js";
   import { ratioPercentage } from "$lib/utils.js";
@@ -74,6 +75,15 @@
     loadingLeague = false;
   }
 
+  async function loadDemoLeagues() {
+    onTeamClick(null);
+    loadingLeague = true;
+    await new Promise((resolve) => setTimeout(resolve, 950));
+    leagues = sampleLeagues;
+    leagueID = leagues[0].leagueID;
+    loadingLeague = false;
+  }
+
   function onTeamClick(roster) {
     selectedLeague.rosters?.forEach(
       (league) => (league.players.isSelected = "false")
@@ -107,6 +117,7 @@
 <div class="grid grid-cols-10 py-2">
   <div class="col-span-3 lg:col-span-2 flex justify-between">
     <ThemeToggle class="pl-4" />
+    <Button class="cursor-pointer mr-4 shadow-md shadow-primary/50" onclick={loadDemoLeagues}>Load Demo</Button>
   </div>
   <div class="flex gap-2 col-span-7 lg:col-span-8 lg:place-items-end">
     <form class="flex max-w-sm pr-4">
@@ -194,7 +205,7 @@
   <Resizable.Pane defaultSize={80}>
     <div class="col-span-10 md:col-span-8 min-h-dvh">
       {#if !fantasyCalcData}
-      <Empty.Root class="h-[70%]">
+        <Empty.Root class="h-[70%]">
           <Empty.Header>
             <Empty.Media variant="icon">
               <TriangleAlert />
@@ -226,7 +237,7 @@
           </div>
         {/each}
       {:else if selectedLeague}
-          {@render league(selectedLeague)}
+        {@render league(selectedLeague)}
       {/if}
     </div>
   </Resizable.Pane>

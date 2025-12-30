@@ -29,7 +29,7 @@
   let leagueID = $state(null);
   let username = $state(import.meta.env.VITE_TEST_USER ?? "");
   let inTimeout = $state(false);
-  let timeoutSecondsLeft = $state(MIN_REQUEST_WAIT_MS/1000);
+  let timeoutSecondsLeft = $state(MIN_REQUEST_WAIT_MS / 1000);
 
   let selectedLeague = $derived(
     leagues.find((l) => l.leagueID === leagueID) ?? []
@@ -55,7 +55,8 @@
   async function loadLeagues() {
     if (inTimeout) return;
     inTimeout = true;
-    timeoutSecondsLeft = MIN_REQUEST_WAIT_MS/1000;
+    onTeamClick(null);
+    timeoutSecondsLeft = MIN_REQUEST_WAIT_MS / 1000;
     setTimeout(() => {
       inTimeout = false;
     }, MIN_REQUEST_WAIT_MS); // after x milliseconds a request can be made again
@@ -74,7 +75,7 @@
   }
 
   function onTeamClick(roster) {
-    selectedLeague.rosters.forEach(
+    selectedLeague.rosters?.forEach(
       (league) => (league.players.isSelected = "false")
     );
     if (roster === null) {
@@ -224,10 +225,8 @@
             <Skeleton class="w-full p-1 h-17" />
           </div>
         {/each}
-      {:else}
-        {#if selectedLeague}
+      {:else if selectedLeague}
           {@render league(selectedLeague)}
-        {/if}
       {/if}
     </div>
   </Resizable.Pane>

@@ -17,7 +17,7 @@
   import TeamCard from "$lib/components/TeamCard.svelte";
   import SidebarDisplay from "$lib/components/SidebarDisplay.svelte";
   /* Icons */
-  import { Import, Loader2Icon, Trophy, TriangleAlert } from "@lucide/svelte";
+  import { Import, Loader2Icon, Trophy, TriangleAlert, ChartBarIncreasing } from "@lucide/svelte";
 
   /* constants */
   const NUM_SKELETONS = 10;
@@ -162,6 +162,7 @@
           </Select.Content>
         </Select.Root>
       </div>
+      <Button href={"/weekly-rankings"} variant="outline">Projections<ChartBarIncreasing/></Button> 
     {/if}
   </div>
 </div>

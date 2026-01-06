@@ -1,3 +1,5 @@
+import * as cheerio from "cheerio";
+
 /**
  * Make an api call for player value rankings
  * @returns array of the players
@@ -18,7 +20,7 @@ export const getFantasyCalcData = async () => {
       trend30Day,
       redraftValue,
       overallRank,
-      player: { sleeperId, name, position },
+      player: { sleeperId, mflId, name, position },
     } = playerObj;
 
     fantasyCalcData.push({
@@ -29,6 +31,7 @@ export const getFantasyCalcData = async () => {
       redraftValue,
       trend30Day,
       sleeperId,
+      mflId,
     });
   });
 
@@ -136,4 +139,72 @@ const transformLeague = (league, fantasyCalcData) => {
     leagueID: league.league_id,
     name: league.name,
   };
+};
+
+
+export const getWeeklyRankings = async (fantasyCalcData) => {
+
+  // (l=16 corresponds to Draft Kings projections)
+  const fantasySharksRes = await fetch(
+    "https://www.fantasysharks.com/apps/Projections/WeeklyProjections.php?pos=ALL&format=json&l=16"
+  );
+
+  if (!fantasySharksRes.ok) throw new Error(`Failed to load weekly rankings.\nStatus: ${fantasySharksRes.status}`);
+
+  let data = await fantasySharksRes.json();
+
+  // Add the sleeper ID to each player in the weekly rankings
+  data.forEach((player) => {
+    let fcdPlayer = fantasyCalcData.find((p) => p.mflId === player.ID);
+    if (fcdPlayer) player.sleeperId = fcdPlayer.sleeperId;
+  });
+
+  // Remove any players that have an extremely poor projection
+  data = data.filter((player) => player.FantasyPoints > 3);
+
+  // Try to scrape the "Last Updated" time from the actual website
+  const res = await fetch(
+    "https://www.fantasysharks.com/apps/Projections/WeeklyProjections.php",
+    {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "text/html"
+      }
+    }
+  );
+
+  let lastUpdated = "unknown";
+  
+  if (res.ok){
+    const html = await res.text();
+    const dom = cheerio.load(html);
+    lastUpdated = dom("small")
+      .filter((_, el) => dom(el).find("b").text().trim() === "Updated:")
+      .text()
+      .replace("Updated:", "")
+      .trim();
+  }
+
+  return {data, lastUpdated};
+  /* example player from the data array
+  {
+    Rank: 1,
+    ID: "13589",
+    Name: "Allen, Josh",
+    Pos: "QB",
+    Team: "BUF",
+    Opp: "NYJ",
+    Comp: "20.14",
+    PassYards: "239",
+    PassTD: 2.0099999999999998,
+    Int: "0.52",
+    Att: "6.03",
+    RushYards: "30",
+    RushTD: 0.88000000000000012,
+    Rec: "0",
+    RecYards: "0",
+    RecTD: 0,
+    FantasyPoints: 27,
+  };
+*/
 };

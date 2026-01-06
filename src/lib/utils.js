@@ -11,6 +11,11 @@ export function formatName(full) {
   return `${firstName[0]}. ${lastNames.join(" ")}`;
 }
 
+export function formatNameCSV(full) {
+  let parts = full.split(",");
+  return `${parts[1]} ${parts[0]}`;
+}
+
 export function ratioPercentage(a, b) {
   return ((a / b) * 100).toFixed(1);
 }

@@ -208,3 +208,20 @@ export const getWeeklyRankings = async (fantasyCalcData) => {
   };
 */
 };
+
+export const getLeagueMatchup = async (leagueID, week) => {
+  const matchupsRes = await fetch(
+    `https://api.sleeper.app/v1/league/${leagueID}/matchups/${week}`
+  );
+
+  if (!matchupsRes.ok) throw new Error(`Status code: ${matchupsRes.status}`);
+
+  const matchups = await matchupsRes.json();
+  let matchupPairsObject = Object.groupBy(
+    matchups,
+    ({ matchup_id }) => matchup_id
+  );
+  
+  let matchupPairsArray = Object.values(matchupPairsObject);
+  return matchupPairsArray;
+}

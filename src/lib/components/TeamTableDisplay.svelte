@@ -1,5 +1,4 @@
 <script>
-  import { red } from "@mui/material/colors";
   import PositionTable from "./PositionTable.svelte";
 
   let { players } = $props();

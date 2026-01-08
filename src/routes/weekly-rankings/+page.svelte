@@ -1,4 +1,5 @@
 <script>
+  import { base } from '$app/paths';
   import Button from "$lib/components/ui/button/button.svelte";
   import * as Select from "$lib/components/ui/select/index.js";
   import * as Table from "$lib/components/ui/table/index.js";
@@ -64,7 +65,7 @@
   <div
   class="flex py-2 gap-4 justify-center sticky top-0 backdrop-blur-sm bg-background/60 w-full h-full shadow-xl"
   >
-  <Button href={"/"}><Undo2/>Home</Button>
+  <Button href={`${base || "/"}`}><Undo2/>Home</Button>
     <Select.Root type="single" name="tableView" bind:value={currentViewValue}>
       <Select.Trigger>{viewTriggerLabel}</Select.Trigger>
       <Select.Content>

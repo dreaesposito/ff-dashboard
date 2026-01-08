@@ -1,4 +1,5 @@
 <script>
+  import { base } from '$app/paths';
   import { onMount } from "svelte";
   import * as Select from "$lib/components/ui/select/index.js";
   import { Button } from "$lib/components/ui/button/index.js";
@@ -66,7 +67,7 @@
 <div
   class="flex py-2 gap-8 justify-center items-center sticky top-0 backdrop-blur-sm bg-background/60 w-full h-full shadow-xl"
 >
-  <Button href={"/"}><Undo2 />Home</Button>
+  <Button href={`${base || "/"}`}><Undo2 />Home</Button>
 
   <div class="bg-primary/3 rounded-md outline-1 py-1 px-3">{leagueName}</div>
 

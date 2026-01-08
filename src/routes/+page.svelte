@@ -1,4 +1,5 @@
 <script>
+  import { base } from '$app/paths';
   import { onMount } from "svelte";
   import { sampleLeagues } from "$lib/demoData-leagues";
   /* Utility functions */
@@ -112,6 +113,7 @@
     <Button class="cursor-pointer mr-4 shadow-md shadow-primary/50" onclick={loadDemoLeagues}>Load Demo</Button>
   </div>
   <div class="flex gap-2 col-span-7 lg:col-span-8 lg:place-items-end">
+    <Button href={`${base}/weekly-rankings`} variant="outline">Player Projections<ChartBarIncreasing/></Button> 
     <form class="flex max-w-sm pr-4">
       <ButtonGroup.Root>
         <Input placeholder="Sleeper Username" bind:value={username} />
@@ -154,9 +156,8 @@
           </Select.Content>
         </Select.Root>
       </div>
-      <Button href={`/matchups/${leagueID}`} onclick={sessionStorage.setItem("selected_league", JSON.stringify(selectedLeague))} variant="outline">Matchups<Swords/></Button>
-      <Button href={"/weekly-rankings"} variant="outline">Projections<ChartBarIncreasing/></Button> 
-    {/if}
+      <Button href={`${base}/matchups/${leagueID}`} onclick={sessionStorage.setItem("selected_league", JSON.stringify(selectedLeague))} variant="outline">Weekly Matchups<Swords/></Button>
+      {/if}
   </div>
 </div>
 

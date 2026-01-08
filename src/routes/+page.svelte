@@ -37,19 +37,11 @@
   );
 
   onMount(async () => {
-    if (import.meta.env.VITE_TEST_MODE === "true") {
-      const fcModule = await import("$lib/testData-fantasyCalcData");
-      const leaguesModule = await import("$lib/testData-leagues");
-      fantasyCalcData = fcModule.fantasyCalcData;
-      leagues = leaguesModule.leagues;
-      leagueID = leagues[0].leagueID;
-    } else {
-      try {
-        fantasyCalcData = await getFantasyCalcData();
-      } catch (err) {
-        fantasyCalcData = null;
-        alert(err.message);
-      }
+    try {
+      fantasyCalcData = await getFantasyCalcData();
+    } catch (err) {
+      fantasyCalcData = null;
+      alert(err.message);
     }
   });
 

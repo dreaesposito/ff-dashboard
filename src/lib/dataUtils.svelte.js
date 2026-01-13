@@ -87,8 +87,7 @@ export const getUserLeagues = async (username, fantasyCalcData) => {
 
       const { name, league_id, status } = league;
 
-      // Only add leagues that are in operation
-      if (status !== "pre_draft") {
+      if (validLeague(status, rosterSet)) {
         leagues.push({ rosterSet, league_id, name });
       }
     }
@@ -100,6 +99,11 @@ export const getUserLeagues = async (username, fantasyCalcData) => {
     throw new Error(`League request for '${username}' failed.\n${error.message}`);
   }
 };
+
+// league is in operation and each roster has a set of players
+const validLeague = (status, rosterSet) => {
+  return status !== "pre_draft" && rosterSet.every((roster) => roster.players)
+}
 
 /**
  * Takes the given league and does required transformations to it.
@@ -114,7 +118,7 @@ const transformLeague = (league, fantasyCalcData) => {
 
   league.rosterSet.forEach((roster) => {
     // 1. Assign the fantasy calculator data to each player on the roster
-    roster.players = roster.players.flatMap((playerId) => {
+    roster.players = roster.players?.flatMap((playerId) => {
       const playerObj = fantasyCalcData.find((p) => p.sleeperId === playerId);
       return playerObj ?? [];
     });
@@ -123,7 +127,7 @@ const transformLeague = (league, fantasyCalcData) => {
     // the total 30 day value trend
     roster.trend30Day = 0;
     roster.totalValue = 0;
-    roster.players.forEach((p) => {
+    roster.players?.forEach((p) => {
       roster.totalValue += p.redraftValue;
       roster.trend30Day += p.trend30Day;
     });

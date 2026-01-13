@@ -1,22 +1,21 @@
-# sv
+# FF Dashboard
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+FF Dashboard is a lightweight fantasy football analytics dashboard built with Svelte. It provides an interactive interface for exploring players and rosters in your fantasy football league and quickly visualize trends. 
 
-## Creating a project
+[Demo](https://dreaesposito.github.io/ff-dashboard/)
 
-If you're seeing this, you've probably already done this step. Congrats!
+![Screenshot](/assets/screenshot.png)
 
-```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
-```
+**Features**
+- A main dashboard layout to analyze the players that make up each roster in your fantasy football league
+    - A dropdown to select which league you want to view, a resizeable layout with player rankings (left) and the roster lists (right)
+    - Visual indicators highlighting upward and downward value trends, relative team values (compared to other teams) broken up by postion type, and roster player rankings in the sidebar
+- Player projections page that collects data from a few different sources (PPR is only supported for now) to provide weekly rankings
+- A WIP weekly matchups page that display all the matchups that took place in your league and their outcomes
 
 ## Developing
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Once you've installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
 
 ```sh
 npm run dev
@@ -25,14 +24,10 @@ npm run dev
 npm run dev -- --open
 ```
 
-## Building
+## Building the project
 
-To create a production version of your app:
+If you want to create a production version of the app:
 
 ```sh
 npm run build
 ```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
